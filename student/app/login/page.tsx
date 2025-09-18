@@ -13,7 +13,7 @@ import Link from "next/link"
 export default function LoginPage() {
   const router = useRouter()
   const [formData, setFormData] = useState({
-    email: "",
+    USN: "",
     password: "",
   })
   const [isLoading, setIsLoading] = useState(false)
@@ -47,13 +47,13 @@ export default function LoginPage() {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">USN</Label>
               <Input
-                id="email"
-                type="email"
-                placeholder="Enter your email"
-                value={formData.email}
-                onChange={(e) => setFormData((prev) => ({ ...prev, email: e.target.value }))}
+                id="USN"
+                type="USN"
+                placeholder="Enter your usn"
+                value={formData.USN}
+                onChange={(e) => setFormData((prev) => ({ ...prev, USN: e.target.value }))}
                 required
               />
             </div>
