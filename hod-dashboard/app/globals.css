@@ -6,12 +6,12 @@
 :root {
   /* Updated color scheme for professional HOD dashboard */
   --background: oklch(1 0 0); /* White background */
-  --foreground: oklch(0.205 0 0); /* Dark gray text */
+  --foreground: rgb(65, 105, 225); /* Dark gray text */
   --card: oklch(0.97 0 0); /* Light gray card background */
   --card-foreground: oklch(0.205 0 0); /* Dark gray card text */
   --popover: oklch(1 0 0); /* White popover background */
   --popover-foreground: oklch(0.205 0 0); /* Dark gray popover text */
-  --primary: oklch(0.205 0 0); /* Dark gray primary */
+  --primary: rgb(65, 105, 225); /* Dark gray primary */
   --primary-foreground: oklch(1 0 0); /* White text on primary */
   --secondary: oklch(0.556 0 0); /* Medium gray secondary */
   --secondary-foreground: oklch(1 0 0); /* White text on secondary */

@@ -56,7 +56,7 @@ export function FacultyManagement({ user }: FacultyManagementProps) {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-bold">Faculty Management</h2>
+          
           <p className="text-muted-foreground">Manage faculty members in your department</p>
         </div>
         <CreateFacultyDialog hodId={user.hodId} onFacultyCreated={loadFaculty} />

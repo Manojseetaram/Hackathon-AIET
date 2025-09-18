@@ -79,7 +79,7 @@ export function SubjectManagement({ user }: SubjectManagementProps) {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-bold">Subject Management</h2>
+        
           <p className="text-muted-foreground">Manage subjects and faculty assignments</p>
         </div>
         <CreateSubjectDialog hodId={user.hodId} onSubjectCreated={loadSubjects} />

@@ -78,7 +78,7 @@ export function CreateFacultyDialog({ hodId, onFacultyCreated }: CreateFacultyDi
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Create New Faculty</DialogTitle>
+          <DialogTitle> Faculty</DialogTitle>
           <DialogDescription>Add a new faculty member to your department.</DialogDescription>
         </DialogHeader>
 

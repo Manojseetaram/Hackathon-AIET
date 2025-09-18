@@ -28,13 +28,13 @@ export interface ChangePasswordData {
 
 // Mock profile data
 const mockProfile: UserProfile = {
-  id: "1",
-  name: "Dr. John Smith",
-  email: "john.smith@university.edu",
-  department: "Computer Science",
-  hodId: "HOD001",
-  phone: "+1 (555) 123-4567",
-  bio: "Head of Computer Science Department with 15+ years of experience in software engineering and academic leadership.",
+  id: "",
+  name: "",
+  email: "",
+  department: "",
+  hodId: "",
+  phone: "",
+  bio: "",
   avatarUrl: "/professional-avatar.png",
   joinedDate: new Date("2020-08-15"),
   lastLogin: new Date(),

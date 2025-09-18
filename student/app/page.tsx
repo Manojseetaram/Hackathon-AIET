@@ -7,12 +7,12 @@ export default function HomePage() {
   const router = useRouter()
 
   useEffect(() => {
-    // Check if user is logged in (mock check)
+    
     const isLoggedIn = localStorage.getItem("isLoggedIn")
     if (isLoggedIn) {
       router.push("/dashboard")
     } else {
-      router.push("/login")
+      router.push("/signup")
     }
   }, [router])
 

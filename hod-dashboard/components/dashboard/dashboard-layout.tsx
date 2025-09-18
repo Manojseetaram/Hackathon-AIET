@@ -17,7 +17,7 @@ interface DashboardLayoutProps {
 }
 
 const sectionTitles = {
-  overview: "Dashboard Overview",
+
   faculty: "Faculty Management",
   subjects: "Subject Management",
   timetable: "Timetable Management",

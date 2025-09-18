@@ -53,10 +53,10 @@ export function DashboardOverview({ user }: DashboardOverviewProps) {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card>
+        <Card className="transition-all duration-300 ease-in-out transform hover:-translate-y-1 hover:scale-105 hover:shadow-lg">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Faculty</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
+            <Users className="h-4 w-4 text-muted-foreground text-primary" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{loading ? "..." : stats.totalFaculty}</div>
@@ -66,10 +66,10 @@ export function DashboardOverview({ user }: DashboardOverviewProps) {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="transition-all duration-300 ease-in-out transform hover:-translate-y-1 hover:scale-105 hover:shadow-lg">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Subjects</CardTitle>
-            <BookOpen className="h-4 w-4 text-muted-foreground" />
+            <BookOpen className="h-4 w-4 text-muted-foreground text-primary" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{loading ? "..." : stats.totalSubjects}</div>
@@ -79,10 +79,10 @@ export function DashboardOverview({ user }: DashboardOverviewProps) {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="transition-all duration-300 ease-in-out transform hover:-translate-y-1 hover:scale-105 hover:shadow-lg">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Active Timetables</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
+            <Calendar className="h-4 w-4 text-muted-foreground text-primary" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{loading ? "..." : stats.activeTimetables}</div>
@@ -92,18 +92,21 @@ export function DashboardOverview({ user }: DashboardOverviewProps) {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Attendance Rate</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{loading ? "..." : stats.attendanceRate}%</div>
-            <p className="text-xs text-muted-foreground">
-              {stats.attendanceRate === 0 ? "No data yet" : "Average attendance"}
-            </p>
-          </CardContent>
-        </Card>
+   <Card className="transition-all duration-300 ease-in-out transform hover:-translate-y-1 hover:scale-105 hover:shadow-lg">
+  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+    <CardTitle className="text-sm font-medium">Attendance Rate</CardTitle>
+    <TrendingUp className="h-4 w-4 text-muted-foreground text-primary" />
+  </CardHeader>
+  <CardContent>
+    <div className="text-2xl font-bold">
+      {loading ? "..." : stats.attendanceRate}%
+    </div>
+    <p className="text-xs text-muted-foreground">
+      {stats.attendanceRate === 0 ? "No data yet" : "Average attendance"}
+    </p>
+  </CardContent>
+</Card>
+
       </div>
 
       {/* Recent Activity */}
@@ -116,7 +119,7 @@ export function DashboardOverview({ user }: DashboardOverviewProps) {
           <CardContent>
             {stats.totalFaculty === 0 ? (
               <div className="text-center py-8">
-                <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                <Users className="h-12 w-12 mx-auto mb-4 text-primary" />
                 <p className="text-muted-foreground">No faculty activity yet</p>
                 <p className="text-sm text-muted-foreground">Activity will appear here once you add faculty members</p>
               </div>

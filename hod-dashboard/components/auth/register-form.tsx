@@ -27,12 +27,14 @@ export function RegisterForm({ onSuccess, onLogin }: RegisterFormProps) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData((prev) => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }))
-  }
+ 
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  setFormData((prev) => ({
+    ...prev,
+    [e.target.name]: e.target.value,
+  }))
+}
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -105,17 +107,25 @@ export function RegisterForm({ onSuccess, onLogin }: RegisterFormProps) {
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="department">Department</Label>
-            <Input
-              id="department"
-              name="department"
-              value={formData.department}
-              onChange={handleChange}
-              placeholder="Enter your department"
-              required
-            />
-          </div>
+         <div className="space-y-2">
+  <Label htmlFor="department">Department</Label>
+  <select
+    id="department"
+    name="department"
+    value={formData.department}
+    onChange={handleChange}
+    required
+    className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+  >
+    <option value="">Select your department</option>
+    <option value="Civil">Civil</option>
+    <option value="Mechanical">Mechanical</option>
+    <option value="Electrical">Electrical</option>
+    <option value="Computer Science">Computer Science</option>
+    <option value="Electronics">Electronics</option>
+  </select>
+</div>
+
 
           <div className="space-y-2">
             <Label htmlFor="hodId">HOD ID</Label>
