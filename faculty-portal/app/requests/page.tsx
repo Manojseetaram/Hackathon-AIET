@@ -104,7 +104,7 @@ export default function AttendanceRequestsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
+      <div className="p-6">
         <h1 className="text-3xl font-bold text-foreground">Attendance Requests</h1>
         <p className="text-muted-foreground mt-1">Review and manage student attendance change requests</p>
       </div>

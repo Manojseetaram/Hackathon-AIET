@@ -112,7 +112,7 @@ export default function AttendanceHistoryPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
+      <div className="p-6">
         <h1 className="text-3xl font-bold text-foreground">Attendance History</h1>
         <p className="text-muted-foreground mt-1">View past attendance records for your subjects</p>
       </div>

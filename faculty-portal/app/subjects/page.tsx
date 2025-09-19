@@ -52,7 +52,7 @@ export default function SubjectsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
+      <div className="p-6">
         <h1 className="text-3xl font-bold text-foreground">Offered Subjects</h1>
         <p className="text-muted-foreground mt-1">Manage subjects assigned to you this semester</p>
       </div>

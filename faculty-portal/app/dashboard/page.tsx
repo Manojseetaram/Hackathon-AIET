@@ -58,8 +58,8 @@ export default function DashboardPage() {
     <div className="space-y-6">
       {/* Welcome Section */}
       <div>
-        <h1 className="text-3xl font-bold text-foreground">Welcome Prof. {faculty.name.split(" ").slice(-1)[0]} 👋</h1>
-        <p className="text-muted-foreground mt-1">Here's an overview of your teaching activities</p>
+        <h1 className="text-3xl font-bold text-foreground text-right">👋Welcome Prof. {faculty.name.split(" ").slice(-1)[0]} </h1>
+        <p className="text-muted-foreground mt-1 text-right">Here's an overview of your teaching activities</p>
       </div>
 
       {/* Stats Cards */}

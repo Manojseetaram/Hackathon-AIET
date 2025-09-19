@@ -98,7 +98,7 @@ export default function ProfilePage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
+      <div className="p-6">
         <h1 className="text-3xl font-bold text-foreground">Profile</h1>
         <p className="text-muted-foreground mt-1">Manage your faculty profile information</p>
       </div>

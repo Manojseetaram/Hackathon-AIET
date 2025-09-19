@@ -165,7 +165,7 @@ export default function ChatbotPage() {
   return (
     <div className="h-full flex flex-col">
       <div className="flex items-center justify-between mb-6">
-        <div>
+        <div className="p-6">
           <h1 className="text-3xl font-bold text-foreground">AI Assistant</h1>
           <p className="text-muted-foreground">Get instant student information and attendance details</p>
         </div>

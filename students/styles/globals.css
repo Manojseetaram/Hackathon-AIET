@@ -1,3 +1,4 @@
+/* //student dashoboard */
 @import 'tailwindcss';
 @import 'tw-animate-css';
 
@@ -122,4 +123,3 @@
   body {
     @apply bg-background text-foreground;
   }
-}
