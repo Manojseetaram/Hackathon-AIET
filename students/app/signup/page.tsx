@@ -25,7 +25,7 @@ export default function SignupPage() {
   const [formData, setFormData] = useState({
     name: "",
     usn: "",
-    email: "",
+    sem :"",
     password: "",
     confirmPassword: "",
     department: "",
@@ -42,7 +42,7 @@ export default function SignupPage() {
     setIsLoading(true)
 
     // Validation
-    if (!formData.name || !formData.usn || !formData.email || !formData.password || !formData.department) {
+    if (!formData.name || !formData.usn || !formData.sem || !formData.password || !formData.department) {
       setError("Please fill in all fields")
       setIsLoading(false)
       return
@@ -69,9 +69,11 @@ export default function SignupPage() {
         body: JSON.stringify({
           name: formData.name,
           usn: formData.usn,
-          email: formData.email,
+          sem:formData.sem,
+         
           password: formData.password,
           department: formData.department,
+
         }),
       })
 
@@ -144,17 +146,17 @@ export default function SignupPage() {
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="email">Email Address</Label>
+             <div className="space-y-2">
+              <Label htmlFor="usn">Email Address</Label>
               <Input
-                id="email"
-                type="email"
-                placeholder="Enter your email"
-                value={formData.email}
-                onChange={(e) => setFormData((prev) => ({ ...prev, email: e.target.value }))}
+                id="sem"
+                type="text"
+                placeholder="Enter your sem"
+                value={formData.sem}
+                onChange={(e) => setFormData((prev) => ({ ...prev, sem: e.target.value }))}
                 required
               />
-            </div>
+            </div> 
 
             <div className="space-y-2">
               <Label htmlFor="department">Department</Label>
