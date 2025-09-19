@@ -126,7 +126,7 @@ export function FacultySidebar({ isOpen = false, onToggle }: FacultySidebarProps
         <SidebarContent />
       </div>
 
-      {/* Mobile Sidebar using Sheet - Using shadcn Sheet component for better mobile experience */}
+      {/* Mobile Sidebar using Sheet - Using shadcn Sheet component for better mobile experience somthing*/}
       <Sheet>
         <SheetTrigger asChild className="lg:hidden">
           <Button variant="outline" size="icon" className="fixed top-4 left-4 z-50 bg-transparent">
