@@ -34,6 +34,7 @@ export type AttendanceWithNames = {
   created_at: string
 } 
 
+
 export type Subject = {
   subject_id: number
   subject_code: string

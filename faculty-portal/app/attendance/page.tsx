@@ -8,20 +8,21 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Switch } from "@/components/ui/switch"
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Calendar, Clock, Users, Save, Eye, CheckCircle, XCircle, Plus } from "lucide-react"
+import { Calendar, Clock, Users, CheckCircle, XCircle, Plus } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import type { Faculty, ClassAttendance, AttendanceWithNames } from "@/lib/types"
 
+// ✅ Predefined time slots in correct format
 const timeSlots = [
-  { value: "10-11", label: "10:00 AM - 11:00 AM" },
-  { value: "11-12", label: "11:00 AM - 12:00 PM" },
-  { value: "12-1", label: "12:00 PM - 1:00 PM" },
-  { value: "2-3", label: "2:00 PM - 3:00 PM" },
-  { value: "3-4", label: "3:00 PM - 4:00 PM" },
-  { value: "4-5", label: "4:00 PM - 5:00 PM" },
+  { value: "09:00-09:50", label: "09:00 AM - 09:50 AM" },
+  { value: "10:00-10:50", label: "10:00 AM - 10:50 AM" },
+  { value: "11:00-11:50", label: "11:00 AM - 11:50 AM" },
+  { value: "12:00-12:50", label: "12:00 PM - 12:50 PM" },
+  { value: "14:00-14:50", label: "02:00 PM - 02:50 PM" },
+  { value: "15:00-15:50", label: "03:00 PM - 03:50 PM" },
+  { value: "16:00-16:50", label: "04:00 PM - 04:50 PM" },
 ]
 
 export default function AttendancePage() {
@@ -29,9 +30,8 @@ export default function AttendancePage() {
   const { toast } = useToast()
 
   const [faculty, setFaculty] = useState<Faculty | null>(null)
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split("T")[0])
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split("T")[0]) // ✅ YYYY-MM-DD
   const [selectedTimeSlot, setSelectedTimeSlot] = useState("")
-  const [students, setStudents] = useState<ClassAttendance[]>([])
   const [attendanceRecords, setAttendanceRecords] = useState<AttendanceWithNames[]>([])
   const [loading, setLoading] = useState(false)
   const [assigning, setAssigning] = useState(false)
@@ -46,74 +46,86 @@ export default function AttendancePage() {
     }
   }, [])
 
-  // ---- ASSIGN SUBJECT TO TIMERANGE ----
-  const handleAssignSubject = async () => {
-    if (!faculty || !subjectCode || !selectedTimeSlot) return
-    const [startTime, endTime] = selectedTimeSlot.split("-")
+  // Utility to format date as YYYY-MM-DD
+const formatDate = (dateString: string) => {
+  const d = new Date(dateString)
+  const year = d.getFullYear()
+  const month = String(d.getMonth() + 1).padStart(2, "0")
+  const day = String(d.getDate()).padStart(2, "0")
+  return `${year}-${month}-${day}`
+}
 
-    setAssigning(true)
-    try {
-      const payload = {
-        facultyId: faculty.faculty_id,
-        subjectCode,
-        classDate: selectedDate,
-        start: `${startTime}:00`,
-        end: `${endTime}:00`,
-      }
+// ---- ASSIGN SUBJECT TO TIMERANGE ----
+const handleAssignSubject = async () => {
+  if (!faculty || !subjectCode || !selectedTimeSlot || !selectedDate) return
+  const [startTime, endTime] = selectedTimeSlot.split("-")
 
-      const response = await fetch("http://localhost:8080/attendance/assignsubject", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      })
-
-      if (!response.ok) throw new Error("Failed to assign subject")
-
-      toast({
-        title: "Success",
-        description: "Subject assigned to selected time range",
-      })
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to assign subject",
-        variant: "destructive",
-      })
-    } finally {
-      setAssigning(false)
+  setAssigning(true)
+  try {
+    const payload = {
+      faculty_id: faculty.faculty_id,
+      subject_id: Number(subjectCode),
+      class_date: formatDate(selectedDate),  // ✅ always YYYY-MM-DD
+      start: startTime,
+      end: endTime,
     }
+
+    const response = await fetch("http://localhost:8080/attendance/assignsubject", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    })
+
+    if (!response.ok) throw new Error("Failed to assign subject")
+
+    toast({
+      title: "Success",
+      description: "Subject assigned to selected time range",
+    })
+  } catch (error) {
+    toast({
+      title: "Error",
+      description: "Failed to assign subject",
+      variant: "destructive",
+    })
+  } finally {
+    setAssigning(false)
   }
+}
 
-  // ---- FETCH ATTENDANCE BY SUBJECTCODE + TIME ----
-  const handleFetchAttendanceBySubject = async () => {
-    if (!subjectCode || !selectedTimeSlot) return
-    const [startTime, endTime] = selectedTimeSlot.split("-")
+// ---- FETCH ATTENDANCE ----
+const handleFetchAttendanceBySubject = async () => {
+  if (!subjectCode || !selectedTimeSlot || !selectedDate) return
+  const [startTime, endTime] = selectedTimeSlot.split("-")
 
-    setLoading(true)
-    try {
-      const response = await fetch(
-        `http://localhost:8080/attendance/subject?subjectCode=${subjectCode}&date=${selectedDate}&start=${startTime}:00&end=${endTime}:00`,
-      )
+  setLoading(true)
+  try {
+    const response = await fetch(
+      `http://localhost:8080/attendance/subject?subjectCode=${subjectCode}& date=${formatDate(
+        selectedDate,
+      )}&start=${startTime}&end=${endTime}`,
+    )
 
-      if (!response.ok) throw new Error("Failed to fetch attendance records")
+    if (!response.ok) throw new Error("Failed to fetch attendance records")
 
-      const data: AttendanceWithNames[] = await response.json()
-      setAttendanceRecords(data)
+    const data: AttendanceWithNames[] = await response.json()
+    setAttendanceRecords(data)
 
-      toast({
-        title: "Success",
-        description: "Attendance records loaded",
-      })
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to fetch attendance records",
-        variant: "destructive",
-      })
-    } finally {
-      setLoading(false)
-    }
+    toast({
+      title: "Success",
+      description: "Attendance records loaded",
+    })
+  } catch (error) {
+    toast({
+      title: "Error",
+      description: "Failed to fetch attendance records",
+      variant: "destructive",
+    })
+  } finally {
+    setLoading(false)
   }
+}
+
 
   const presentCount = attendanceRecords.filter((a) => a.status === "PRESENT").length
   const absentCount = attendanceRecords.filter((a) => a.status === "ABSENT").length
