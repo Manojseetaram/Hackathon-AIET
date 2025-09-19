@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Calendar, BookOpen, Users } from "lucide-react"
-import { fetchAssignedSubjects } from "@/api/faculty"
 import type { Faculty, Subject } from "@/lib/types"
 
 export default function SubjectsPage() {
@@ -16,20 +15,31 @@ export default function SubjectsPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const facultyData = localStorage.getItem("faculty")
-    if (facultyData) {
-      const parsedFaculty = JSON.parse(facultyData)
-      setFaculty(parsedFaculty)
-      loadSubjects(parsedFaculty)
+    // For now: fake faculty data until JWT decoding is added
+    const fakeFaculty: Faculty = {
+      faculty_id: 123, // must be a number
+      name: "John Doe",
+      email: "john@example.com",
+      department: "CSE",
     }
+
+    setFaculty(fakeFaculty)
+    loadSubjects(fakeFaculty.faculty_id)
   }, [])
 
-  const loadSubjects = async (facultyData: Faculty) => {
+  const loadSubjects = async (facultyId: number) => {
     try {
-      const response = await fetchAssignedSubjects(facultyData.faculty_id)
-      if (response.ok && response.data) {
-        setSubjects(response.data)
-      }
+      const response = await fetch(`http://localhost:8080/subjects/faculty/${facultyId}`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer <your-token-here>`, // temporary manual token
+        },
+      })
+
+      if (!response.ok) throw new Error("Failed to fetch subjects")
+
+      const data: Subject[] = await response.json()
+      setSubjects(data)
     } catch (error) {
       console.error("Error loading subjects:", error)
     } finally {

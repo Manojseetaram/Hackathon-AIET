@@ -1,16 +1,40 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Users, Search, TrendingUp, TrendingDown, Minus } from "lucide-react"
-import { fetchAssignedSubjects, fetchStudentSummary, searchStudent } from "@/api/faculty"
+import {
+  Users,
+  Search,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+} from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import type { Faculty, Subject, StudentSummary } from "@/lib/types"
 
@@ -26,68 +50,91 @@ export default function StudentsPage() {
   const [loading, setLoading] = useState(true)
   const [searching, setSearching] = useState(false)
 
-  useEffect(() => {
-    const facultyData = localStorage.getItem("faculty")
-    if (facultyData) {
-      const parsedFaculty = JSON.parse(facultyData)
-      setFaculty(parsedFaculty)
-      loadData(parsedFaculty)
+  // helper to get token headers
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem("token")
+    return {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
     }
+  }
+
+  useEffect(() => {
+    loadFaculty()
   }, [])
 
-  const loadData = async (facultyData: Faculty) => {
+  const loadFaculty = async () => {
     try {
-      const [subjectsResponse, studentsResponse] = await Promise.all([
-        fetchAssignedSubjects(facultyData.faculty_id),
-        fetchStudentSummary(),
-      ])
+      // fetch faculty profile
+      const facultyRes = await fetch("http://localhost:8080/faculty", {
+        headers: getAuthHeaders(),
+      })
+      if (!facultyRes.ok) throw new Error("Failed to load faculty")
+      const facultyData: Faculty = await facultyRes.json()
+      setFaculty(facultyData)
 
-      if (subjectsResponse.ok && subjectsResponse.data) {
-        setSubjects(subjectsResponse.data)
-      }
+      // fetch subjects
+      const subjectsRes = await fetch(
+        "http://localhost:8080/subjects/faculty",
+        { headers: getAuthHeaders() }
+      )
+      if (!subjectsRes.ok) throw new Error("Failed to load subjects")
+      const subjectsData: Subject[] = await subjectsRes.json()
+      setSubjects(subjectsData)
 
-      if (studentsResponse.ok && studentsResponse.data) {
-        setStudents(studentsResponse.data)
-        setFilteredStudents(studentsResponse.data)
-      }
+      setLoading(false)
     } catch (error) {
-      console.error("Error loading data:", error)
+      console.error("Error loading faculty/subjects:", error)
+      setLoading(false)
+    }
+  }
+
+  const loadStudentSummary = async (subjectCode: string) => {
+    try {
+      setLoading(true)
+      const res = await fetch(
+        `http://localhost:8080/attendance/summary/subject?subjectCode=${encodeURIComponent(
+          subjectCode
+        )}`,
+        { headers: getAuthHeaders() }
+      )
+      if (!res.ok) throw new Error("Failed to load student summary")
+      const summaryData: StudentSummary[] = await res.json()
+      setStudents(summaryData)
+      setFilteredStudents(summaryData)
+    } catch (error) {
+      console.error("Error loading student summary:", error)
     } finally {
       setLoading(false)
     }
   }
 
-  const handleSearch = async () => {
+  const handleSearch = () => {
     if (!searchQuery.trim()) {
       setFilteredStudents(students)
       return
     }
 
-    setSearching(true)
-    try {
-      const response = await searchStudent(searchQuery)
-      if (response.ok && response.data) {
-        setFilteredStudents([response.data])
-        toast({
-          title: "Student Found",
-          description: `Found ${response.data.StudentName}`,
-        })
-      } else {
-        setFilteredStudents([])
-        toast({
-          title: "No Results",
-          description: "No student found matching your search",
-          variant: "destructive",
-        })
-      }
-    } catch (error) {
+    const q = searchQuery.toLowerCase()
+    const result = students.filter(
+      (s) =>
+        s.StudentName.toLowerCase().includes(q) ||
+        s.USN.toLowerCase().includes(q)
+    )
+
+    if (result.length > 0) {
+      setFilteredStudents(result)
       toast({
-        title: "Error",
-        description: "An error occurred while searching",
+        title: "Student Found",
+        description: `Found ${result.length} result(s)`,
+      })
+    } else {
+      setFilteredStudents([])
+      toast({
+        title: "No Results",
+        description: "No student found matching your search",
         variant: "destructive",
       })
-    } finally {
-      setSearching(false)
     }
   }
 
@@ -96,9 +143,12 @@ export default function StudentsPage() {
     if (subjectId === "all") {
       setFilteredStudents(students)
     } else {
-      // In a real app, this would filter by subject
-      // For demo purposes, we'll show all students
-      setFilteredStudents(students)
+      const subject = subjects.find(
+        (s) => s.subject_id.toString() === subjectId
+      )
+      if (subject) {
+        loadStudentSummary(subject.subject_code)
+      }
     }
   }
 
@@ -109,8 +159,10 @@ export default function StudentsPage() {
   }
 
   const getAttendanceIcon = (percentage: number) => {
-    if (percentage >= 85) return <TrendingUp className="h-4 w-4 text-green-600" />
-    if (percentage >= 75) return <Minus className="h-4 w-4 text-yellow-600" />
+    if (percentage >= 85)
+      return <TrendingUp className="h-4 w-4 text-green-600" />
+    if (percentage >= 75)
+      return <Minus className="h-4 w-4 text-yellow-600" />
     return <TrendingDown className="h-4 w-4 text-red-600" />
   }
 
@@ -122,11 +174,20 @@ export default function StudentsPage() {
 
   const averageAttendance =
     filteredStudents.length > 0
-      ? Math.round(filteredStudents.reduce((sum, student) => sum + student.Percentage, 0) / filteredStudents.length)
+      ? Math.round(
+          filteredStudents.reduce(
+            (sum, student) => sum + student.Percentage,
+            0
+          ) / filteredStudents.length
+        )
       : 0
 
-  const excellentStudents = filteredStudents.filter((s) => s.Percentage >= 85).length
-  const lowAttendanceStudents = filteredStudents.filter((s) => s.Percentage < 75).length
+  const excellentStudents = filteredStudents.filter(
+    (s) => s.Percentage >= 85
+  ).length
+  const lowAttendanceStudents = filteredStudents.filter(
+    (s) => s.Percentage < 75
+  ).length
 
   if (!faculty) return null
 
@@ -134,49 +195,69 @@ export default function StudentsPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-foreground">Student Summary</h1>
-        <p className="text-muted-foreground mt-1">View and analyze student attendance across all subjects</p>
+        <h1 className="text-3xl font-bold text-foreground">
+          Student Summary
+        </h1>
+        <p className="text-muted-foreground mt-1">
+          View and analyze student attendance across all subjects
+        </p>
       </div>
 
       {/* Stats Overview */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Students</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Total Students
+            </CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{filteredStudents.length}</div>
+            <div className="text-2xl font-bold">
+              {filteredStudents.length}
+            </div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Average Attendance</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Average Attendance
+            </CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{averageAttendance}%</div>
+            <div className="text-2xl font-bold">
+              {averageAttendance}%
+            </div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Excellent (≥85%)</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Excellent (≥85%)
+            </CardTitle>
             <div className="h-4 w-4 bg-green-600 rounded-full" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">{excellentStudents}</div>
+            <div className="text-2xl font-bold text-green-600">
+              {excellentStudents}
+            </div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Low Attendance (&lt;75%)</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Low Attendance (&lt;75%)
+            </CardTitle>
             <div className="h-4 w-4 bg-red-600 rounded-full" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-600">{lowAttendanceStudents}</div>
+            <div className="text-2xl font-bold text-red-600">
+              {lowAttendanceStudents}
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -188,7 +269,9 @@ export default function StudentsPage() {
             <Search className="h-5 w-5" />
             Search & Filter Students
           </CardTitle>
-          <CardDescription>Search by USN or name, and filter by subject</CardDescription>
+          <CardDescription>
+            Search by USN or name, and filter by subject
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -200,24 +283,36 @@ export default function StudentsPage() {
                   placeholder="Enter USN or student name"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyPress={(e) => e.key === "Enter" && handleSearch()}
+                  onKeyPress={(e) =>
+                    e.key === "Enter" && handleSearch()
+                  }
                 />
                 <Button onClick={handleSearch} disabled={searching}>
-                  {searching ? <Search className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+                  {searching ? (
+                    <Search className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Search className="h-4 w-4" />
+                  )}
                 </Button>
               </div>
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="subject">Filter by Subject</Label>
-              <Select value={selectedSubject} onValueChange={handleSubjectFilter}>
+              <Select
+                value={selectedSubject}
+                onValueChange={handleSubjectFilter}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="All subjects" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Subjects</SelectItem>
                   {subjects.map((subject) => (
-                    <SelectItem key={subject.subject_id} value={subject.subject_id.toString()}>
+                    <SelectItem
+                      key={subject.subject_id}
+                      value={subject.subject_id.toString()}
+                    >
                       {subject.subject_code} - {subject.subject_name}
                     </SelectItem>
                   ))}
@@ -248,7 +343,10 @@ export default function StudentsPage() {
           {loading ? (
             <div className="space-y-3">
               {[1, 2, 3, 4, 5].map((i) => (
-                <div key={i} className="h-16 bg-muted animate-pulse rounded-lg" />
+                <div
+                  key={i}
+                  className="h-16 bg-muted animate-pulse rounded-lg"
+                />
               ))}
             </div>
           ) : filteredStudents.length > 0 ? (
@@ -269,19 +367,31 @@ export default function StudentsPage() {
                     .sort((a, b) => b.Percentage - a.Percentage)
                     .map((student) => (
                       <TableRow key={student.USN}>
-                        <TableCell className="font-medium">{student.USN}</TableCell>
+                        <TableCell className="font-medium">
+                          {student.USN}
+                        </TableCell>
                         <TableCell>{student.StudentName}</TableCell>
                         <TableCell>{student.TotalClasses}</TableCell>
                         <TableCell>{student.Attended}</TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
                             {getAttendanceIcon(student.Percentage)}
-                            <span className="font-medium">{student.Percentage}%</span>
+                            <span className="font-medium">
+                              {student.Percentage}%
+                            </span>
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Badge variant={getAttendanceBadge(student.Percentage)}>
-                            {student.Percentage >= 85 ? "Excellent" : student.Percentage >= 75 ? "Good" : "Low"}
+                          <Badge
+                            variant={getAttendanceBadge(
+                              student.Percentage
+                            )}
+                          >
+                            {student.Percentage >= 85
+                              ? "Excellent"
+                              : student.Percentage >= 75
+                              ? "Good"
+                              : "Low"}
                           </Badge>
                         </TableCell>
                       </TableRow>
@@ -293,8 +403,8 @@ export default function StudentsPage() {
             <Alert>
               <Users className="h-4 w-4" />
               <AlertDescription>
-                No students found matching your search criteria. Try adjusting your search terms or clearing the
-                filters.
+                No students found matching your search criteria. Try
+                adjusting your search terms or clearing the filters.
               </AlertDescription>
             </Alert>
           )}

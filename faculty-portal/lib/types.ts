@@ -13,7 +13,7 @@ export type SubjectSummary = {
   total_classes: number
   attended: number
   percentage: number
-}
+} 
 
 export type ClassAttendance = {
   usn: string
@@ -32,7 +32,7 @@ export type AttendanceWithNames = {
   status: string
   recorded_at: string
   created_at: string
-}
+} 
 
 export type Subject = {
   subject_id: number

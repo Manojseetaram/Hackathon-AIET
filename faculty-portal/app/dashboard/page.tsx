@@ -4,7 +4,6 @@ import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Calendar, BookOpen, Users, Clock } from "lucide-react"
-import { fetchAssignedSubjects, fetchStudentSummary } from "@/api/faculty"
 import type { Faculty, Subject, StudentSummary } from "@/lib/types"
 
 export default function DashboardPage() {
@@ -16,25 +15,30 @@ export default function DashboardPage() {
   useEffect(() => {
     const facultyData = localStorage.getItem("faculty")
     if (facultyData) {
-      setFaculty(JSON.parse(facultyData))
-      loadDashboardData(JSON.parse(facultyData))
+      const parsedFaculty: Faculty = JSON.parse(facultyData)
+      setFaculty(parsedFaculty)
+      loadDashboardData(parsedFaculty.faculty_id)
     }
   }, [])
 
-  const loadDashboardData = async (facultyData: Faculty) => {
+  const loadDashboardData = async (facultyId: number) => {
     try {
-      const [subjectsResponse, studentsResponse] = await Promise.all([
-        fetchAssignedSubjects(facultyData.faculty_id),
-        fetchStudentSummary(),
-      ])
+      // 1. Fetch assigned subjects
+      const subjectsResponse = await fetch(`http://localhost:8080/subjects/faculty?faculty_id=${facultyId}`)
+      const subjectsData: Subject[] = await subjectsResponse.json()
+      setSubjects(subjectsData)
 
-      if (subjectsResponse.ok && subjectsResponse.data) {
-        setSubjects(subjectsResponse.data)
+      // 2. Fetch student summaries for each subject
+      const allSummaries: StudentSummary[] = []
+      for (const subject of subjectsData) {
+        const studentsResponse = await fetch(
+          `http://localhost:8080/attendance/summary/subject?subject_id=${subject.subject_id}`
+        )
+        const studentsData: StudentSummary[] = await studentsResponse.json()
+        allSummaries.push(...studentsData)
       }
 
-      if (studentsResponse.ok && studentsResponse.data) {
-        setStudentSummary(studentsResponse.data)
-      }
+      setStudentSummary(allSummaries)
     } catch (error) {
       console.error("Error loading dashboard data:", error)
     } finally {
@@ -60,6 +64,7 @@ export default function DashboardPage() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* Total Subjects */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Subjects</CardTitle>
@@ -71,6 +76,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
+        {/* Total Students */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Students</CardTitle>
@@ -82,6 +88,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
+        {/* Average Attendance */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Average Attendance</CardTitle>
@@ -93,6 +100,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
+        {/* Last Attendance (placeholder) */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Last Attendance</CardTitle>
